@@ -2,7 +2,7 @@
 // let chapter = require("./chapters/2_9.js"),
 let chapter = require("./chapters/3_13.js"),
 	{height,width,lacks,start} = chapter,
-	winNumber = height * width - lacks.length,
+	winLength = height * width - lacks.length,
 	link = [],
 	map = [];
 
@@ -83,47 +83,48 @@ function fade(node){
 }
 
 function findWinWay(){
-	if(winNumber === link.length) return link;
+	while(link.length < winLength){
+		head = link[link.length-1];
 
-	head = link[link.length-1];
+		if(map[head.y-1]){
+			upNode = map[head.y-1][head.x];
+			if(!head.toUp && upNode && !upNode.in)
+			{
+				head.toUp = true;
+				makeHead(upNode);
+				continue;
+			}
+		}
+		if(map[head.y+1]){
+			downNode = map[head.y+1][head.x];
+			if(!head.toDown && downNode && !downNode.in )
+			{
+				head.toDown = true;
+				makeHead(downNode);
+				continue;
+			}
 
-	if(map[head.y-1]){
-		upNode = map[head.y-1][head.x];
-		if(!head.toUp && upNode && !upNode.in)
-		{
-			head.toUp = true;
-			makeHead(upNode);
-			return findWinWay();
 		}
-	}
-	if(map[head.y+1]){
-		downNode = map[head.y+1][head.x];
-		if(!head.toDown && downNode && !downNode.in )
-		{
-			head.toDown = true;
-			makeHead(downNode);
-			return findWinWay();
+		if(map[head.y]){
+			leftNode = map[head.y][head.x-1];
+			if(!head.toLeft && leftNode && !leftNode.in )
+			{
+				head.toLeft = true;
+				makeHead(leftNode);
+				continue;
+			}
+		}
+		if(map[head.y]){
+			rightNode = map[head.y][head.x+1];
+			if(!head.toRight && rightNode && !rightNode.in){
+				head.toRight = true;
+				makeHead(rightNode);
+				continue;
+			}
 		}
 
-	}
-	if(map[head.y]){
-		leftNode = map[head.y][head.x-1];
-		if(!head.toLeft && leftNode && !leftNode.in )
-		{
-			head.toLeft = true;
-			makeHead(leftNode);
-			return findWinWay();
-		}
-	}
-	if(map[head.y]){
-		rightNode = map[head.y][head.x+1];
-		if(!head.toRight && rightNode && !rightNode.in){
-			head.toRight = true;
-			makeHead(rightNode);
-			return findWinWay();
-		}
+		fade(link.pop());
 	}
 
-	fade(link.pop());
-	return findWinWay();
+	return link;
 }

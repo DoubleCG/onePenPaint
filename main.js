@@ -1,25 +1,66 @@
-let link = [];
+// let chapter = require("./chapters/1_10.js"),
+// let chapter = require("./chapters/2_9.js"),
+let chapter = require("./chapters/3_13.js"),
+	{height,width,lacks,start} = chapter,
+	winNumber = height * width - lacks.length,
+	link = [],
+	map = [];
 
-let height = 3;
-let width = 3;
+let head = null;
+let upNode = null, rightNode = null, downNode = null, leftNode = null;
 
-let start = {
-	x:1,
-	y:0
-};
+iniMap();
 
-let lack = [
-	{
-		x:0,
-		y:0
+if(false){
+	showMap();
+}else{
+	console.time("A");
+	console.log(findWinWay());
+	console.timeEnd("A");
+}
+
+function iniMap(){
+	for(let i=0;i<height;i++){
+		for(let j=0;j<width;j++){
+			let node = { y:i, x:j };
+			if(!map[i]){
+				map[i] = [];
+			}
+			if(!isLack(node)){
+				if(i==start.y&&j==start.x){
+					node.in = true;
+					link.push(node);
+				}else{
+					fade(node);
+				}
+				map[i][j] = node;
+			}
+		}
 	}
-];
+}
 
-let nodeMap = [];
+function showMap(){
+	let s = "";
+	for(let i=0;i<height;i++){
+		for(let j=0;j<width;j++){
+			if(map[i][j]){
+				if(map[i][j].isStart){
+					s+="o";
+				}else{
+					s+="#";
+				}
+			}else{
+				s+=" ";
+			}
+		}
+		s+="\n";
+	}
+	console.log(s);
+}
 
 function isLack(node){
 	let _y = node.y, _x = node.x;
-	for(let item of lack){
+	for(let item of lacks){
 		if(item.x == _x  && item.y == _y){
 			return true;
 		}
@@ -28,92 +69,61 @@ function isLack(node){
 }
 
 
-let winNumber = height * width - lack.length;
-
-for(let i=0;i<height;i++){
-	for(let j=0;j<width;j++){
-		let node = {
-			y:i,
-			x:j
-		};
-		if(!nodeMap[i]){
-			nodeMap[i] = [];
-		}
-		if(i==start.y&&j==start.x){
-			link.push(node);
-		}else if(!isLack(node)){
-			fade(node);
-			nodeMap[i][j] = node;
-		}
-	}
-}
-
-
-function isWin(){
-	return winNumber === link.length;
-}
-
 function makeHead(node){
-	fade(link.pop());
-	link.pop().in = false;
 	node.in = true;
 	link.push(node);
 }
 
 function fade(node){
 	node.in = false;
-	node.hadUp = false;
-	node.hadRight = false;
-	node.hadDown = false;
-	node.hadLeft = false;
+	node.toUp = false;
+	node.toRight = false;
+	node.toDown = false;
+	node.toLeft = false;
 }
 
-console.time("A");
-findWinWay(0);
-console.timeEnd("A");
+function findWinWay(){
+	if(winNumber === link.length) return link;
 
-function findWinWay(index){
-	if(isWin()) return link;
+	head = link[link.length-1];
 
-	let head = link[link.length-1];
-	
-	let upNode = null, rightNode = null, downNode = null, leftNode = null;
+	if(map[head.y-1]){
+		upNode = map[head.y-1][head.x];
+		if(!head.toUp && upNode && !upNode.in)
+		{
+			head.toUp = true;
+			makeHead(upNode);
+			return findWinWay();
+		}
+	}
+	if(map[head.y+1]){
+		downNode = map[head.y+1][head.x];
+		if(!head.toDown && downNode && !downNode.in )
+		{
+			head.toDown = true;
+			makeHead(downNode);
+			return findWinWay();
+		}
 
-	if(nodeMap[head.y-1]){
-		upNode = nodeMap[head.y-1][head.x];
 	}
-	if(nodeMap[head.y+1]){
-		downNode = nodeMap[head.y+1][head.x]
+	if(map[head.y]){
+		leftNode = map[head.y][head.x-1];
+		if(!head.toLeft && leftNode && !leftNode.in )
+		{
+			head.toLeft = true;
+			makeHead(leftNode);
+			return findWinWay();
+		}
 	}
-	if(nodeMap[head.y]){
-		leftNode = nodeMap[head.y][head.x-1];
-		rightNode = nodeMap[head.y][head.x+1];
-	}
-
-
-	if(!head.hadUp && upNode && !upNode.in)
-	{
-		head.hadUp = true;
-		makeHead(upNode);
-	}
-	else if(!head.hadRight && rightNode && !rightNode.in){
-		head.hadRight = true;
-		makeHead(rightNode);
-	}
-	else if(!head.hadDown && downNode && !downNode.in )
-	{
-		head.hadDown = true;
-		makeHead(downNode);
-	}
-	else if(!head.hadLeft && leftNode && !leftNode.in )
-	{
-		head.hadLeft = true;
-		makeHead(leftNode);
-	}
-	else
-	{
-		return findWinWay(index-1);
+	if(map[head.y]){
+		rightNode = map[head.y][head.x+1];
+		if(!head.toRight && rightNode && !rightNode.in){
+			head.toRight = true;
+			makeHead(rightNode);
+			return findWinWay();
+		}
 	}
 
-	return findWinWay(index+1);
+	fade(link.pop());
+	return findWinWay();
 }

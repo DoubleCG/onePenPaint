@@ -34,8 +34,8 @@ class NodesLink{
 
 let unit = 55;
 
-let height = 6;
-let width = 6;
+let height = 5;
+let width = 5;
 
 
 let findSpeed = 10;
@@ -135,16 +135,16 @@ function nodeOver(node){
 	if(node.index){
 		nodesLink.fadeSubs(node.index);
 	}else{
-		if(isCurrentNeighbor(node)){
+		if(isHeadNeighbor(node)){
 			subAction(node);
 		}
 	}
 }
 
 function nodeOut(node){
-	if(isCurrentNeighbor(node)){
+	if(isHeadNeighbor(node)){
 		nodesLink.push(node);
-		if(winNumber === nodesLink.getLength()){
+		if(isWin()){
 			makeRecord();
 		}
 	}else{
@@ -152,6 +152,10 @@ function nodeOut(node){
 			subDefault(node);
 		}
 	}
+}
+
+function isWin(){
+	return winNumber === nodesLink.getLength()
 }
 
 function makeCurrent(node){
@@ -175,14 +179,14 @@ function subDefault(node){
 }
 
 
-function isCurrentNeighbor(node){
-	let currentNode = nodesLink.getHead();
-	if(currentNode.x == node.x){
-		if(Math.abs(currentNode.y - node.y) == 1){
+function isHeadNeighbor(node){
+	let head = nodesLink.getHead();
+	if(head.x == node.x){
+		if(Math.abs(head.y - node.y) == 1){
 			return true;
 		}
-	}else if(currentNode.y == node.y){
-		if(Math.abs(currentNode.x - node.x) == 1){
+	}else if(head.y == node.y){
+		if(Math.abs(head.x - node.x) == 1){
 			return true;
 		}
 	}else{
@@ -195,62 +199,52 @@ findWinWay(0);
 console.timeEnd("A");
 
 function findWinWay(index){
-	let currentNode = nodesLink.getHead();
-	if(!currentNode) return;
+	let head = nodesLink.getHead();
+	if(isWin()) return;
 
 	let upNode = null,
 		rightNode = null,
 		downNode = null,
 		leftNode = null;
 
-	if(nodeMap[currentNode.y]){
-		leftNode = nodeMap[currentNode.y][currentNode.x-1];
-		rightNode = nodeMap[currentNode.y][currentNode.x+1];
+	if(nodeMap[head.y]){
+		leftNode = nodeMap[head.y][head.x-1];
+		rightNode = nodeMap[head.y][head.x+1];
 	}
 
-	if(nodeMap[currentNode.y-1]){
-		upNode = nodeMap[currentNode.y-1][currentNode.x]
+	if(nodeMap[head.y-1]){
+		upNode = nodeMap[head.y-1][head.x]
 	}
 
-	if(nodeMap[currentNode.y+1]){
-		downNode = nodeMap[currentNode.y+1][currentNode.x]
+	if(nodeMap[head.y+1]){
+		downNode = nodeMap[head.y+1][head.x]
 	}
 
-	if( !( upNode && !upNode.index ) &&
-		!( rightNode && !rightNode.index ) &&
-		!( downNode && !downNode.index ) &&
-		!( leftNode && !leftNode.index ) )
+
+	if(!head.hadUp && upNode && !upNode.index)
+	{
+		head.hadUp = true;
+		makeCurrent(upNode);
+	}
+	else if(!head.hadRight && rightNode && !rightNode.index){
+		head.hadRight = true;
+		makeCurrent(rightNode);
+	}
+	else if(!head.hadDown && downNode && !downNode.index )
+	{
+		head.hadDown = true;
+		makeCurrent(downNode);
+	}
+	else if(!head.hadLeft && leftNode && !leftNode.index )
+	{
+		head.hadLeft = true;
+		makeCurrent(leftNode);
+	}
+	else
 	{
 		nodesLink.fadeSubs(index-1);
-		return findWinWay(nodesLink.getLength()-1);
-	}else{
-		if(!currentNode.hadUp && upNode && !upNode.index)
-		{
-			currentNode.hadUp = true;
-			makeCurrent(upNode);
-			return findWinWay(index+1);
-		}
-		else if(!currentNode.hadRight && rightNode && !rightNode.index){
-			currentNode.hadRight = true;
-			makeCurrent(rightNode);
-			return findWinWay(index+1);
-		}
-		else if(!currentNode.hadDown && downNode && !downNode.index )
-		{
-			currentNode.hadDown = true;
-			makeCurrent(downNode);
-			return findWinWay(index+1);
-		}
-		else if(!currentNode.hadLeft && leftNode && !leftNode.index )
-		{
-			currentNode.hadLeft = true;
-			makeCurrent(leftNode);
-			return findWinWay(index+1);
-		}
-		else
-		{
-			nodesLink.fadeSubs(index-1);
-			return findWinWay(index-1);
-		}
+		return findWinWay(index-1);
 	}
+
+	return findWinWay(index+1);
 }

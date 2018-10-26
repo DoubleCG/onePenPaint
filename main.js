@@ -1,6 +1,4 @@
-// let chapter = require("./chapters/1_10.js"),
-// let chapter = require("./chapters/2_9.js"),
-let chapter = require("./chapters/3_13.js"),
+let chapter = require("./chapters/5_3.js"),
 	{height,width,lacks,start} = chapter,
 	winLength = height * width - lacks.length,
 	link = [],
@@ -8,6 +6,7 @@ let chapter = require("./chapters/3_13.js"),
 
 let head = null;
 let upNode = null, rightNode = null, downNode = null, leftNode = null;
+let imgDir = ["↑","→","↓","←","*"];
 
 iniMap();
 
@@ -17,7 +16,34 @@ if(false){
 	console.time("A");
 	console.log(findWinWay());
 	console.timeEnd("A");
+	showResult();
 }
+
+
+function showResult(){
+	let s = "";
+	for(let i=0;i<height;i++){
+		for(let j=0;j<width;j++){
+			if(map[i][j]){
+				map[i][j] = imgDir[map[i][j].dir];
+			}
+		}
+	}
+
+	for(let i=0;i<height;i++){
+		for(let j=0;j<width;j++){
+			if(map[i][j]){
+				s+=map[i][j];
+			}else{
+				s+=" ";
+			}
+		}
+		s+="\n";
+	}
+	console.log(s);
+}
+
+
 
 function iniMap(){
 	for(let i=0;i<height;i++){
@@ -28,6 +54,7 @@ function iniMap(){
 			}
 			if(!isLack(node)){
 				if(i==start.y&&j==start.x){
+					node.isStart = true;
 					node.in = true;
 					link.push(node);
 				}else{
@@ -80,18 +107,28 @@ function fade(node){
 	node.toRight = false;
 	node.toDown = false;
 	node.toLeft = false;
+	node.dir = null;
 }
 
 function findWinWay(){
 	while(link.length < winLength){
 		head = link[link.length-1];
-
 		if(map[head.y-1]){
 			upNode = map[head.y-1][head.x];
 			if(!head.toUp && upNode && !upNode.in)
 			{
 				head.toUp = true;
+				head.dir = 0;
 				makeHead(upNode);
+				continue;
+			}
+		}
+		if(map[head.y]){
+			rightNode = map[head.y][head.x+1];
+			if(!head.toRight && rightNode && !rightNode.in){
+				head.toRight = true;
+				head.dir = 1;
+				makeHead(rightNode);
 				continue;
 			}
 		}
@@ -100,6 +137,7 @@ function findWinWay(){
 			if(!head.toDown && downNode && !downNode.in )
 			{
 				head.toDown = true;
+				head.dir = 2;
 				makeHead(downNode);
 				continue;
 			}
@@ -110,21 +148,16 @@ function findWinWay(){
 			if(!head.toLeft && leftNode && !leftNode.in )
 			{
 				head.toLeft = true;
+				head.dir = 3;
 				makeHead(leftNode);
 				continue;
 			}
 		}
-		if(map[head.y]){
-			rightNode = map[head.y][head.x+1];
-			if(!head.toRight && rightNode && !rightNode.in){
-				head.toRight = true;
-				makeHead(rightNode);
-				continue;
-			}
-		}
+
 
 		fade(link.pop());
 	}
 
+	link[link.length-1].dir = 4;
 	return link;
 }
